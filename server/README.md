@@ -5,7 +5,8 @@
 
 ### 路径
 - load?url=xxx: 监听加载事件，参数为视频url
-- read?url=xxx: 监听阅读事件，参数为视频url
+- read?time=xxx 监听阅读事件，参数为当前播放进度（秒）
+- stop 监听暂停事件
 
 ### 使用
 1. 启用google cloud tts服务([启用文档](https://cloud.google.com/text-to-speech/docs/quickstart-client-libraries))。

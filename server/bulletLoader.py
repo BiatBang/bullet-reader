@@ -12,6 +12,7 @@ def getContent(url):
     soup = BeautifulSoup(html, "html.parser")
     return soup
 
+# the raw html contains the duration of the video and cid
 def find_cid_duration(url):
     # trash and brute solution
     html = getHtml(url)

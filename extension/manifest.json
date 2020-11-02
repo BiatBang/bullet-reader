@@ -3,16 +3,16 @@
   "version": "1.0",
   "description": "Bullet Reeeeaaaaaader!!",
   "permissions": ["http://localhost:8080/*", "tabs"],
-  "content_scripts": [
-		{
-			"matches": ["https://*.bilibili.com/*"],
-			"js": ["play.js"]
-		}
-  ],
   "background": {
     "scripts": ["background.js"],
     "persistent": false
   },
+  "content_scripts": [
+    {
+      "matches": ["*://*.bilibili.com/*"],
+      "js": ["bullet.js"]
+    }
+  ],
   "browser_action": {
     "default_popup": "popup.html",
     "default_icon": {

@@ -12,21 +12,7 @@ document.getElementById("load-bullets-btn").onclick = (element) => {
                     response.status);
                   return;
                 }
-                alert("hello")
-            }).catch(err => {
-                console.log(err)
-            })
-    });
-}
-
-document.getElementById("read-bullets-btn").onclick = (element) => {
-    chrome.tabs.query({active: true, lastFocusedWindow: true}, tabs => {
-        let url = tabs[0].url;
-        // use `url` here inside the callback because it's asynchronous!
-        fetch('http://localhost:8080/read?url=' + url)
-            .then(res => {
-                // Result now contains the response text, do what you want...
-                alert("hello")
+                alert("bullets loaded!")
             }).catch(err => {
                 console.log(err)
             })

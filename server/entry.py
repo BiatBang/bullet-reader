@@ -1,43 +1,63 @@
 # Python 3 server example
 from http.server import BaseHTTPRequestHandler, HTTPServer
-import time
 from pydub import AudioSegment
-from playsound import playsound
 from google.cloud import texttospeech
-from tts import playaudio
 from bulletLoader import load_bullet_duration_from_url
-from bulletReader import read_bullets
+from bulletReader import read_bullets, stop_reading
 from urllib.parse import urlparse, parse_qs
+
+from tornado.web import Application, RequestHandler
+from tornado.ioloop import IOLoop
+from tornado import gen 
+from tornado.concurrent import run_on_executor
+from concurrent.futures import ThreadPoolExecutor
 
 hostName = "localhost"
 serverPort = 8080
 bullets = dict()
 duration = 0
 
-class MyServer(BaseHTTPRequestHandler):
-    def do_GET(self):
-        p_path = urlparse(self.path)
-        if p_path.path == '/':
-            print("hello user")
-        elif p_path.path.startswith('/load'):
-            global duration
-            url = parse_qs(p_path.query)['url']
-            duration = load_bullet_duration_from_url(url[0], bullets)
-            print(p_path, duration)
-        elif p_path.path.startswith('/read'):
-            url = parse_qs(p_path.query)['url']
-            read_bullets(url, bullets, duration)
+class LoadHandler(RequestHandler):
+    def get(self):
+        url = self.get_argument('url', None)
+        global duration
+        duration = load_bullet_duration_from_url(url, bullets)
+        print(url, duration)
+        self.write({"status": "success"})
 
-        self.send_response(200)
-        self.send_header('Content-type','application/json')
-        self.end_headers()
+class ReadHandler(RequestHandler):
+    executor = ThreadPoolExecutor(max_workers=1)
+    
+    # make reading async, 'cause it takes a looong time
+    @run_on_executor
+    def background_read_bullets(self, time):
+        read_bullets(bullets, time, duration)
+
+    @gen.coroutine
+    def get(self):
+        start_time = self.get_argument('time', None)
+        yield self.background_read_bullets(start_time)
+        self.write({"status": "success"})
         
-if __name__ == "__main__":        
-    webServer = HTTPServer((hostName, serverPort), MyServer)
+class StopHandler(RequestHandler):
+    def get(self):
+        stop_reading()
+        self.write({"status": "success"})
+
+def make_app():
+    return Application([
+        (r"/load", LoadHandler),
+        (r"/read", ReadHandler),
+        (r"/stop", StopHandler)
+    ])
+        
+if __name__ == "__main__":  
+    app = make_app()
+    app.listen(serverPort)
     print("Server started http://%s:%s" % (hostName, serverPort))
+    
     try:
-        webServer.serve_forever()
+        IOLoop.current().start()
     except KeyboardInterrupt:
-        pass
-    webServer.server_close()
+        IOLoop.current().start()
     print("Server stopped.")

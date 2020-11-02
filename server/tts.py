@@ -23,7 +23,7 @@ def playaudio(text):
 
     # The response's audio_content is binary.
     song = AudioSegment.from_file(io.BytesIO(response.audio_content), format="mp3")
-
+    print("playing ", text, "...")
     # pip install simpleaudio solves the problem:
     # PermissionError: [Errno 13] Permission denied: 'C:\\Users\\***\\AppData\\Local\\Temp\\tmpj5yymayl.wav'
     # how did they notice this?
